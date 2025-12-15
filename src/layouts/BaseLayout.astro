@@ -1,5 +1,5 @@
 ---
-import { ViewTransitions } from 'astro:transitions';
+import { ClientRouter } from 'astro:transitions';
 import {
 	AdminName,
 	Site,
@@ -197,10 +197,10 @@ const structuredDataJson = JSON.stringify(structuredData)
 		{twitterHandle && <meta name="twitter:creator" content={twitterHandle} />}
 
 		{structuredData.length > 0 && (
-			<script type="application/ld+json" set:html={structuredDataJson}></script>
+			<script is:inline type="application/ld+json" set:html={structuredDataJson}></script>
 		)}
 
-		<ViewTransitions />
+		<ClientRouter />
 
 		<style is:global>
 			@tailwind base;
