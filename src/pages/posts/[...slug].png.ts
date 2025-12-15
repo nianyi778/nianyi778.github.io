@@ -12,11 +12,13 @@ export async function getStaticPaths() {
 export const GET = async ({ params }: APIContext) => {
 	const post = await getEntry('posts', params.slug as string);
 	return new Response(
-		await postOpenGraph({
-			title: post?.data.title ?? '',
-			description: post?.data.description,
-			tags: post?.data.tags,
-		}),
+		new Uint8Array(
+			await postOpenGraph({
+				title: post?.data.title ?? '',
+				description: post?.data.description,
+				tags: post?.data.tags,
+			}),
+		),
 		{
 			headers: { 'content-type': 'image/png' },
 		},
