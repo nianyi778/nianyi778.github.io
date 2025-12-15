@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="888" height="483.61099" viewBox="0 0 888 483.61099">
+  <defs>
+    <linearGradient id="nightMist" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0f1220" stop-opacity="1" />
+      <stop offset="1" stop-color="#15182b" stop-opacity="1" />
+    </linearGradient>
+    <linearGradient id="nightRiver" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.10" />
+      <stop offset="0.5" stop-color="#ffffff" stop-opacity="0.06" />
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.10" />
+    </linearGradient>
+    <filter id="fog" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="10" />
+    </filter>
+  </defs>
+
+  <!-- 夜雾天空 -->
+  <rect x="0" y="0" width="888" height="483.61099" fill="url(#nightMist)" />
+
+  <!-- 远山 -->
+  <path
+    d="M-10 320 C 80 270, 140 270, 210 300 C 270 326, 325 255, 400 275 C 470 293, 520 255, 600 278 C 690 305, 745 250, 820 270 C 890 290, 940 268, 920 290 L 920 420 L -10 420 Z"
+    fill="#ffffff"
+    opacity="0.10"
+  />
+
+  <!-- 中景山 -->
+  <path
+    d="M-10 360 C 70 330, 140 340, 210 360 C 290 383, 330 320, 410 330 C 490 340, 530 310, 610 330 C 700 352, 750 325, 830 340 C 900 353, 950 345, 920 360 L 920 420 L -10 420 Z"
+    fill="#ffffff"
+    opacity="0.14"
+  />
+
+  <!-- 河面 -->
+  <path
+    d="M0 365 C 160 350, 310 395, 460 385 C 620 372, 710 350, 888 368 L 888 430 L 0 430 Z"
+    fill="url(#nightRiver)"
+  />
+
+  <!-- 水纹 -->
+  <g fill="none" stroke="#ffffff" stroke-linecap="round" opacity="0.18">
+    <path d="M120 392 C 165 382, 200 406, 245 396" stroke-width="2" />
+    <path d="M210 408 C 255 398, 290 422, 335 412" stroke-width="2" />
+    <path d="M520 395 C 565 385, 600 409, 645 399" stroke-width="2" />
+    <path d="M610 412 C 655 402, 690 426, 735 416" stroke-width="2" />
+  </g>
+
+  <!-- 小桥 -->
+  <g opacity="0.28" stroke="#ffffff" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M420 385 C 445 350, 490 350, 515 385" stroke-width="6" />
+    <path d="M410 385 L 525 385" stroke-width="6" />
+    <path d="M432 378 L 432 388" stroke-width="3" />
+    <path d="M452 368 L 452 388" stroke-width="3" />
+    <path d="M472 364 L 472 388" stroke-width="3" />
+    <path d="M492 368 L 492 388" stroke-width="3" />
+    <path d="M512 378 L 512 388" stroke-width="3" />
+  </g>
+
+  <!-- 近景岸线 -->
+  <path
+    d="M0 420 C 120 408, 240 445, 360 432 C 480 418, 600 450, 720 434 C 820 420, 860 422, 888 425 L 888 483.61099 L 0 483.61099 Z"
+    fill="#ffffff"
+    opacity="0.06"
+  />
+
+  <!-- 垂柳 -->
+  <g opacity="0.22" fill="none" stroke="#ffffff" stroke-linecap="round">
+    <path d="M560 330 C 555 350, 555 365, 560 385" stroke-width="2" />
+    <path d="M570 332 C 565 352, 565 368, 570 390" stroke-width="2" />
+    <path d="M580 335 C 575 355, 575 372, 580 395" stroke-width="2" />
+  </g>
+
+  <!-- 飞鸟 -->
+  <g opacity="0.18" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round">
+    <path d="M170 120 C 180 112, 190 112, 200 120" />
+    <path d="M205 120 C 215 112, 225 112, 235 120" />
+    <path d="M690 140 C 700 132, 710 132, 720 140" />
+    <path d="M725 140 C 735 132, 745 132, 755 140" />
+  </g>
+
+  <!-- 雾层 -->
+  <g filter="url(#fog)">
+    <rect x="-30" y="250" width="520" height="110" fill="#0f1220" opacity="0.55" />
+    <rect x="320" y="230" width="640" height="140" fill="#0f1220" opacity="0.45" />
+    <rect x="-30" y="330" width="980" height="120" fill="#0f1220" opacity="0.30" />
+  </g>
+
+  <!-- 地面线 -->
+  <path d="m1,421.53481h887v-2H1c-.55228,0-1,.44772-1,1h0c0,.55228.44771,1,1,1Z" fill="#ffffff" opacity="0.18" />
+</svg>

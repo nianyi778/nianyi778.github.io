@@ -1,7 +1,7 @@
 import type { PostHideElements } from '~/content/config';
 
 export const Site = 'https://blog.divinations.top';
-export const SiteLanguage = 'zh';
+export const SiteLanguage = 'zh-CN';
 export const SiteTitle = '无尽光芒';
 export const SiteDescription = '踏歌长行，梦想永在';
 export const FooterDescription = '肆意闪耀';

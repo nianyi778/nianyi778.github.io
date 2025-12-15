@@ -8,6 +8,13 @@ interface Props {
 	title?: string;
 	description?: string;
 	socialImage?: string;
+	ogType?: 'website' | 'article';
+	noindex?: boolean;
+	canonical?: string;
+	jsonLd?: unknown | unknown[];
+	date?: Date;
+	lastmod?: Date;
+	tags?: string[];
 	currentNav?: string;
 }
 ---

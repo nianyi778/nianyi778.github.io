@@ -11,9 +11,13 @@ export async function getStaticPaths({ paginate }: GetStaticPathsOptions) {
 }
 
 const { page } = Astro.props;
+const pageTitle =
+	page.currentPage && page.currentPage > 1
+		? `归档（第${page.currentPage}页）`
+		: '归档';
 ---
 
-<ScaffoldLayout title="Archive" description="all articles." currentNav="Archives">
+<ScaffoldLayout title={pageTitle} description="全部文章归档" currentNav="Archives">
 	{
 		page.data.map((post) => {
 			const date = post.data.lastmod || post.data.date;

@@ -24,9 +24,17 @@ export async function getStaticPaths({ paginate }: GetStaticPathsOptions) {
 
 const { page } = Astro.props;
 const { tag } = Astro.params;
+const pageTitle =
+	page.currentPage && page.currentPage > 1
+		? `标签：${tag}（第${page.currentPage}页）`
+		: `标签：${tag}`;
 ---
 
-<ScaffoldLayout title={tag} description={`Posts with tag ${tag}`} currentNav="Tags">
+<ScaffoldLayout
+	title={pageTitle}
+	description={`包含标签「${tag}」的文章`}
+	currentNav="Tags"
+>
 	{page.data.map((post) => <PostCard {...post} />)}
 	<Paginator {...page} />
 </ScaffoldLayout>

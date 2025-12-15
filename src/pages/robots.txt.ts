@@ -1,10 +1,14 @@
 import type { APIRoute } from 'astro';
 
+const base = (import.meta.env.BASE_URL ?? '/').replace(/\/+$/, '/');
+
 const robotsTxt = `
 User-agent: *
 Allow: /
+Disallow: ${base}search
+Disallow: ${base}search.html
 
-Sitemap: ${new URL('sitemap-index.xml', import.meta.env.SITE).href}
+Sitemap: ${new URL(`${base}sitemap-index.xml`, import.meta.env.SITE).href}
 `.trim();
 
 export const GET: APIRoute = () => {

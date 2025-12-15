@@ -1,6 +1,13 @@
 ---
 import { ViewTransitions } from 'astro:transitions';
-import { SiteLanguage, SiteTitle } from '~/config';
+import {
+	AdminName,
+	Site,
+	SiteDescription,
+	SiteLanguage,
+	SiteTitle,
+	Socials,
+} from '~/config';
 import { withBase } from '~/utils/url';
 import 'lxgw-wenkai-screen-web/lxgwwenkaigbscreen/result.css';
 
@@ -8,6 +15,13 @@ export interface Props {
 	title?: string;
 	description?: string;
 	socialImage?: string;
+	ogType?: 'website' | 'article';
+	noindex?: boolean;
+	canonical?: string;
+	jsonLd?: unknown | unknown[];
+	date?: Date;
+	lastmod?: Date;
+	tags?: string[];
 	rootClass?:
 		| Iterable<
 				string | Record<string, boolean> | string[] | false | null | undefined
@@ -19,24 +33,120 @@ export interface Props {
 		  >
 		| string;
 }
-const { title, description, socialImage, rootClass, bodyClass } = Astro.props;
-const socialImg = new URL(socialImage ?? '/og.png', Astro.url).href;
+const {
+	title,
+	description,
+	socialImage,
+	ogType = 'website',
+	noindex = false,
+	canonical,
+	jsonLd,
+	date,
+	lastmod,
+	tags,
+	rootClass,
+	bodyClass,
+} = Astro.props;
+
+const canonicalHref = canonical ?? Astro.url.href;
+const fullTitle = title
+	? title === SiteTitle
+		? title
+		: `${title} | ${SiteTitle}`
+	: SiteTitle;
+const metaDescription = description ?? SiteDescription;
+const socialImg = new URL(socialImage ?? '/og.png', canonicalHref).href;
+const isProd = import.meta.env.PROD;
+const robotsContent =
+	!isProd || noindex
+		? 'noindex,nofollow'
+		: 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1';
+
+const ogLocale = (() => {
+	const lang = SiteLanguage;
+	if (!lang) return undefined;
+	if (lang.toLowerCase() === 'zh' || lang.toLowerCase() === 'zh-cn')
+		return 'zh_CN';
+	if (lang.toLowerCase() === 'en' || lang.toLowerCase() === 'en-us')
+		return 'en_US';
+	if (lang.toLowerCase() === 'ja' || lang.toLowerCase() === 'ja-jp')
+		return 'ja_JP';
+	const [language, region] = lang.split('-');
+	return region ? `${language}_${region.toUpperCase()}` : language;
+})();
+
+const twitterHandleFromUrl = (url?: string) => {
+	if (!url) return undefined;
+	try {
+		const u = new URL(url, Site);
+		const host = u.hostname.toLowerCase();
+		if (!host.endsWith('x.com') && !host.endsWith('twitter.com'))
+			return undefined;
+		const username = u.pathname.split('/').filter(Boolean)[0];
+		return username ? `@${username.replace(/^@/, '')}` : undefined;
+	} catch {
+		return undefined;
+	}
+};
+const twitterHandle = twitterHandleFromUrl(Socials?.x?.url);
+
+const sameAs = Object.values(Socials)
+	.map((s) => s?.url)
+	.filter((u): u is string => typeof u === 'string')
+	.filter((u) => u.startsWith('https://') || u.startsWith('http://'))
+	.filter((u) => !u.endsWith('/rss.xml'));
+
+const baseStructuredData = [
+	{
+		'@context': 'https://schema.org',
+		'@type': 'WebSite',
+		name: SiteTitle,
+		url: Site,
+		description: SiteDescription,
+		inLanguage: SiteLanguage,
+		potentialAction: {
+			'@type': 'SearchAction',
+			target: `${Site.replace(/\/$/, '')}/search?q={search_term_string}`,
+			'query-input': 'required name=search_term_string',
+		},
+	},
+	{
+		'@context': 'https://schema.org',
+		'@type': 'Person',
+		name: AdminName,
+		url: Site,
+		sameAs,
+	},
+];
+const extraStructuredData = Array.isArray(jsonLd)
+	? jsonLd
+	: jsonLd
+		? [jsonLd]
+		: [];
+const structuredData = [...baseStructuredData, ...extraStructuredData];
+const structuredDataJson = JSON.stringify(structuredData)
+	.replace(/</g, '\\u003c')
+	.replace(/-->/g, '--\\u003e')
+	.replace(/\u2028/g, '\\u2028')
+	.replace(/\u2029/g, '\\u2029');
 ---
 
 <html lang={SiteLanguage} class:list={rootClass}>
 	<head>
 		<!-- Global Metadata -->
 		<meta charset="utf-8" />
-		<link rel="canonical" href={Astro.url.href} />
+		<link rel="canonical" href={canonicalHref} />
 		<meta name="viewport" content="width=device-width,initial-scale=1" />
 		<meta http-equiv="x-ua-compatible" content="ie=edge" />
 		<link rel="icon" href={withBase('/favicon.ico')} />
 		<link rel="apple-touch-icon" href={withBase('/apple-touch-icon.png')} />
+		<meta name="robots" content={robotsContent} />
 
 		<!-- Primary Meta Tags -->
-		<title>{title}</title>
-		<meta name="title" content={title} />
-		<meta name="description" content={description} />
+		<title>{fullTitle}</title>
+		<meta name="title" content={fullTitle} />
+		<meta name="description" content={metaDescription} />
+		<meta name="author" content={AdminName} />
 		<link
 			rel="alternate"
 			type="application/rss+xml"
@@ -51,19 +161,44 @@ const socialImg = new URL(socialImage ?? '/og.png', Astro.url).href;
 		/>
 
 		<!-- Open Graph / Facebook -->
-		<meta property="og:url" content={Astro.url.href} />
-		<meta property="og:title" content={title} />
-		<meta property="og:type" content="website" />
-		<meta property="og:description" content={description} />
+		<meta property="og:url" content={canonicalHref} />
+		<meta property="og:title" content={fullTitle} />
+		<meta property="og:type" content={ogType} />
+		{ogLocale && <meta property="og:locale" content={ogLocale} />}
+		<meta property="og:description" content={metaDescription} />
 		<meta property="og:image" content={socialImg} />
+		<meta property="og:image:alt" content={title ?? SiteTitle} />
 		<meta property="og:site_name" content={SiteTitle} />
+		{
+			ogType === 'article' && (
+				<>
+					{date && (
+						<meta property="article:published_time" content={date.toISOString()} />
+					)}
+					{(lastmod ?? date) && (
+						<meta
+							property="article:modified_time"
+							content={(lastmod ?? date)!.toISOString()}
+						/>
+					)}
+					{tags?.map((tag) => <meta property="article:tag" content={tag} />)}
+				</>
+			)
+		}
 
 		<!-- Twitter -->
 		<meta name="twitter:card" content="summary_large_image" />
-		<meta name="twitter:url" content={Astro.url.href} />
-		<meta name="twitter:title" content={title} />
-		<meta name="twitter:description" content={description} />
+		<meta name="twitter:url" content={canonicalHref} />
+		<meta name="twitter:title" content={fullTitle} />
+		<meta name="twitter:description" content={metaDescription} />
 		<meta name="twitter:image" content={socialImg} />
+		<meta name="twitter:image:alt" content={title ?? SiteTitle} />
+		{twitterHandle && <meta name="twitter:site" content={twitterHandle} />}
+		{twitterHandle && <meta name="twitter:creator" content={twitterHandle} />}
+
+		{structuredData.length > 0 && (
+			<script type="application/ld+json" set:html={structuredDataJson}></script>
+		)}
 
 		<ViewTransitions />
 

@@ -1,9 +1,9 @@
 ---
-import { Picture } from "astro:assets";
-import img from "~/assets/undraw_dog_c7i6.svg";
-import { SiteDescription, SiteTitle } from "~/config";
-import { withBase } from "~/utils/url";
-import MarkdownLayout from "~/layouts/MarkdownLayout.astro";
+import { Picture } from 'astro:assets';
+import img from '~/assets/undraw_cat_c7i6.svg';
+import imgDark from '~/assets/undraw_cat_c7i6_dark.svg';
+import { SiteDescription, SiteTitle } from '~/config';
+import MarkdownLayout from '~/layouts/MarkdownLayout.astro';
 ---
 
 <MarkdownLayout
@@ -14,10 +14,17 @@ import MarkdownLayout from "~/layouts/MarkdownLayout.astro";
 >
   <div class="flex flex-col items-center gap-4 xl:flex-row">
     <Picture
-      class="lg:max-w-md"
+      class="lg:max-w-md dark:hidden"
       src={img}
       formats={["avif", "webp"]}
-      alt="a dog"
+      alt="一只小猫"
+      loading="eager"
+    />
+    <Picture
+      class="hidden lg:max-w-md dark:block"
+      src={imgDark}
+      formats={["avif", "webp"]}
+      alt="一只小猫"
       loading="eager"
     />
     <div>

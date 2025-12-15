@@ -1,7 +1,9 @@
 ---
 import type { CollectionEntry } from 'astro:content';
+import { AdminName, Site, SiteTitle, Socials } from '~/config';
 import MarkdownLayout from '~/layouts/MarkdownLayout.astro';
 import { getPosts } from '~/utils/collection';
+import { toMetaDescription } from '~/utils/seo';
 
 export async function getStaticPaths() {
 	return (await getPosts()).map((post) => ({
@@ -14,6 +16,7 @@ type Props = CollectionEntry<'posts'>;
 
 const post = Astro.props;
 const socialImage = post.data.image?.src ?? `${Astro.url.pathname}.png`;
+const canonicalHref = Astro.url.href;
 const { Content, remarkPluginFrontmatter } = await post.render();
 
 // remarkPluginFrontmatter.date will be changed to string, so we parse it again.
@@ -24,8 +27,55 @@ if (typeof remarkPluginFrontmatter.lastmod === 'string') {
 	post.data.lastmod = new Date(remarkPluginFrontmatter.lastmod);
 }
 post.data.readingTime = remarkPluginFrontmatter.readingTime;
+
+const metaDescription =
+	post.data.description ?? toMetaDescription(post.body ?? '', 160);
+
+const sameAs = Object.values(Socials)
+	.map((s) => s?.url)
+	.filter((u): u is string => typeof u === 'string')
+	.filter((u) => u.startsWith('https://') || u.startsWith('http://'))
+	.filter((u) => !u.endsWith('/rss.xml'));
+
+const jsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'BlogPosting',
+	headline: post.data.title,
+	description: metaDescription,
+	image: new URL(socialImage ?? '/og.png', canonicalHref).href,
+	datePublished: post.data.date?.toISOString(),
+	dateModified: (post.data.lastmod ?? post.data.date)?.toISOString(),
+	author: {
+		'@type': 'Person',
+		name: AdminName,
+		url: Site,
+		sameAs,
+	},
+	publisher: {
+		'@type': 'Person',
+		name: AdminName,
+		url: Site,
+	},
+	mainEntityOfPage: {
+		'@type': 'WebPage',
+		'@id': canonicalHref,
+	},
+	keywords: post.data.tags?.join(', '),
+	isPartOf: {
+		'@type': 'Blog',
+		name: SiteTitle,
+		url: Site,
+	},
+};
 ---
 
-<MarkdownLayout {...post.data} socialImage={socialImage} currentNav="Blog">
+<MarkdownLayout
+	{...post.data}
+	description={metaDescription}
+	socialImage={socialImage}
+	ogType="article"
+	jsonLd={jsonLd}
+	currentNav="Blog"
+>
 	<Content />
 </MarkdownLayout>

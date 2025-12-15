@@ -10,6 +10,10 @@ import 'katex/dist/katex.css';
 type Props = CollectionEntry<'posts'>['data'] & {
 	currentNav?: string;
 	socialImage?: string;
+	ogType?: 'website' | 'article';
+	noindex?: boolean;
+	canonical?: string;
+	jsonLd?: unknown | unknown[];
 };
 const { title, date, lastmod, tags, readingTime, hide } = Astro.props;
 const show = (key: string) =>

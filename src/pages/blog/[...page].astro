@@ -11,9 +11,13 @@ export async function getStaticPaths({ paginate }: GetStaticPathsOptions) {
 }
 
 const { page } = Astro.props;
+const pageTitle =
+	page.currentPage && page.currentPage > 1
+		? `博客（第${page.currentPage}页）`
+		: '博客';
 ---
 
-<ScaffoldLayout title="Blog" description="Latest articles." currentNav="Blog">
+<ScaffoldLayout title={pageTitle} description="最新文章" currentNav="Blog">
 	{page.data.map((post) => <PostCard {...post} />)}
 	<Paginator {...page} />
 </ScaffoldLayout>
