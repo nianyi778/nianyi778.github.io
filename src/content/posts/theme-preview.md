@@ -2,7 +2,7 @@
 slug: my-theme-preview
 title: Theme Preview with a so long long long long title~
 description: What do they got in there? King Kong? You're a very talented young man, with your own clever thoughts and ideas. Do you need a manager? I was part of something special. Did he just throw my cat out of the window? Do you have any idea how long it takes those cups to decompose.
-image: ../attachments/100.jpg
+image: ../../assets/attachments/100.jpg
 date: 2031-03-31T23:30:47+08:00
 lastmod: 2024-03-01T23:30:47+08:00
 hidden: false
@@ -108,7 +108,7 @@ Web Image
 
 Local Image
 
-![Local Image](../attachments/100.jpg)
+![Local Image](../../assets/attachments/100.jpg)
 ```
 
 Web Image
@@ -117,7 +117,7 @@ Web Image
 
 Local Image
 
-![Local Image](../attachments/100.jpg)
+![Local Image](../../assets/attachments/100.jpg)
 
 # Block Quotes
 

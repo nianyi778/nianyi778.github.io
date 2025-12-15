@@ -29,9 +29,9 @@ src
 ├── assets
 │   ├── logo.svg    # site logo read in components/Header.astro
 │   ├── og-logo.png # logo image for OG generation. Check src/utils/openGraphImage.tsx for detail
+│   └── attachments # image attachments for posts
 ├── config.ts       # main config
-├── content         # markdown posts and attachments go here
-│   ├── attachments
+├── content         # markdown posts go here
 │   └── posts
 ├── pages
 │   ├── index.astro # index page written in Astro component
@@ -47,7 +47,7 @@ The posts frontmatter describes as:
 slug: my-custom-slug
 title: My awesome title
 description: some desc
-image: ../attachments/100.jpg # hero & social image
+image: ../../assets/attachments/100.jpg # hero & social image
 date: 2024-02-26T23:30:47+08:00
 lastmod: 2024-02-26T23:30:47+08:00
 hidden: false # set this to true to make this post hidden from posts list. But the uri is still accessable.

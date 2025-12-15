@@ -805,12 +805,12 @@ openssl s_client -connect star.divinations.top:443 -servername star.divinations.
 ### 优化前测速截图
 
 <!-- 📌 请在此处插入优化前的测速截图 -->
-![优化前测速数据](../attachments/speed-test-before.png)
+![优化前测速数据](../../assets/attachments/speed-test-before.png)
 
 ### 优化后测速截图
 
 <!-- 📌 请在此处插入优化后的测速截图 -->
-![优化后测速数据](../attachments/speed-test-after.png)
+![优化后测速数据](../../assets/attachments/speed-test-after.png)
 
 ---
 
