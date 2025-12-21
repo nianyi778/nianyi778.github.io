@@ -276,7 +276,43 @@ done
 
 ---
 
-## 七、运行方式
+## 七、进阶：成功后自动通知
+
+如果你不想一直盯着日志，可以在脚本成功部分加入通知代码。
+
+### 1️⃣ Telegram 通知（推荐）
+
+你需要：
+1.  在 Telegram 找 `@BotFather` 创建机器人，获取 `BOT_TOKEN`。
+2.  找 `@userinfobot` 获取你的 `CHAT_ID`。
+
+修改脚本中的成功判断部分：
+
+```bash
+  if [ $RESULT -eq 0 ]; then
+    echo "🎉 SUCCESS! Instance created!"
+    
+    # Telegram 通知
+    curl -s -X POST "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/sendMessage" \
+        -d chat_id="<YOUR_CHAT_ID>" \
+        -d text="✅ OCI Osaka A1 实例创建成功！IP 请登录控制台查看。"
+
+    exit 0
+  else
+```
+
+### 2️⃣ 邮件通知（需要配置 mail 命令）
+
+```bash
+  if [ $RESULT -eq 0 ]; then
+    echo "🎉 SUCCESS! Instance created!" | mail -s "OCI Instance Created" your-email@example.com
+    exit 0
+  fi
+```
+
+---
+
+## 八、运行方式
 
 ```bash
 chmod +x oci-osaka-a1-single-ad.sh
@@ -303,7 +339,7 @@ tail -f osaka-hunt.log
 
 ---
 
-## 八、现实预期（非常重要）
+## 九、现实预期（非常重要）
 
 - ⏱ 常见成功时间：10 分钟 ~ 几小时
 - 🕐 最容易成功：日本时间 **凌晨 1–6 点**
@@ -311,7 +347,7 @@ tail -f osaka-hunt.log
 
 ---
 
-## 九、成功后第一时间要做的事
+## 十、成功后第一时间要做的事
 
 1. Console → Compute → Instances
 2. 记录公网 IP
@@ -320,7 +356,7 @@ tail -f osaka-hunt.log
 
 ---
 
-## 十、一句话总结
+## 十一、一句话总结
 
 > **大阪 ARM 不是“创建”，而是“抢”**  
 > 你跑着脚本，就已经在队列里了。
