@@ -127,15 +127,29 @@ for (const platform in Socials) {
 			{
 				socials.length > 0 && (
 					<div class="mt-[2dvh] flex flex-wrap justify-center gap-3 lg:mt-0">
-						{socials.map(({ platform, icon, url, label }) => (
-							<a href={url} aria-label={label ?? platform}>
-								<Icon
-									name={icon}
-									class="fill-current opacity-75 hover:opacity-100"
-									title={label ?? platform}
-								/>
-							</a>
-						))}
+						{socials.map(({ platform, icon, url, label }) =>
+							platform === 'mail' ? (
+								<>
+									<!--email_off-->
+									<a href={url} aria-label={label ?? platform} data-astro-reload>
+										<Icon
+											name={icon}
+											class="fill-current opacity-75 hover:opacity-100"
+											title={label ?? platform}
+										/>
+									</a>
+									<!--/email_off-->
+								</>
+							) : (
+								<a href={url} aria-label={label ?? platform}>
+									<Icon
+										name={icon}
+										class="fill-current opacity-75 hover:opacity-100"
+										title={label ?? platform}
+									/>
+								</a>
+							),
+						)}
 					</div>
 				)
 			}
