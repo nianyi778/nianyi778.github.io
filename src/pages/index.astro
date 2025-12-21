@@ -1,7 +1,6 @@
 ---
 import { Picture } from 'astro:assets';
-import img from '~/assets/undraw_cat_c7i6.svg';
-import imgDark from '~/assets/undraw_cat_c7i6_dark.svg';
+import img from '~/assets/mountains-8314422.svg';
 import { SiteDescription, SiteTitle } from '~/config';
 import MarkdownLayout from '~/layouts/MarkdownLayout.astro';
 ---
@@ -14,57 +13,34 @@ import MarkdownLayout from '~/layouts/MarkdownLayout.astro';
 >
   <div class="flex flex-col items-center gap-4 xl:flex-row">
     <Picture
-      class="lg:max-w-md dark:hidden"
+      class="lg:max-w-md"
       src={img}
       formats={["avif", "webp"]}
-      alt="一只小猫"
-      loading="eager"
-    />
-    <Picture
-      class="hidden lg:max-w-md dark:block"
-      src={imgDark}
-      formats={["avif", "webp"]}
-      alt="一只小猫"
+      alt="远山"
       loading="eager"
     />
     <div>
-      <h1>你好，欢迎来到我的小岛。我是念一 👋</h1>
+      <h1>你好，我是念一 👋</h1>
       <p>
-        一名软件工程师。曾在杭州的科技浪潮中成长，如今在东京的秩序与烟火气中探索。
+        一名旅居东京的软件工程师。曾在大厂搬砖，如今在异国探索生活与技术的平衡。
+        这里是我的数字花园，用来对抗遗忘，记录思考。
       </p>
-      <p>
-        我是一个用代码构建世界的工程师，也是一个试图用文字记录下思考坐标的探索者。创建这个空间，是为了对抗遗忘，沉淀思考，并与世界分享我的小小发现。
-      </p>
-      <p>在这个博客里，我会分享：</p>
+      <p>在这个博客里，主要分享：</p>
       <ul>
-        <li>
-          <strong>技术分享</strong
-          >：不止是代码片段，更是背后解决问题的思路与架构思考。
-        </li>
-        <li>
-          <strong>成长感悟</strong
-          >：从杭州到东京，记录一个普通工程师在职场与生活中的思考与蜕变。
-        </li>
-        <li>
-          <strong>投资理财</strong
-          >：作为技术人，我对复利和概率着迷。这里是我在二级市场的学习笔记和实战复盘。
-        </li>
-        <li>
-          <strong>东京见闻</strong
-          >：用脚步和镜头，捕捉这座庞大都市里迷人的细节、光影和四季。
-        </li>
+        <li><strong>技术分享</strong>：架构思考与实战经验的总结。</li>
+        <li><strong>成长感悟</strong>：从杭州到东京，职场与生活的蜕变。</li>
+        <li><strong>投资理财</strong>：二级市场的学习笔记与复盘。</li>
+        <li><strong>东京见闻</strong>：用镜头捕捉这座城市的四季与光影。</li>
       </ul>
       <p>
-        如果你也对技术、成长和探索世界保持着好奇心，希望我的文字能与你产生小小的共鸣，或是提供一个不同的视角。
-      </p>
-      <p>
-        想看到我的代码实现，可以在 <a
+        希望这些文字能给你带来一点启发或共鸣。
+        你可以在 <a
           href="https://github.com/nianyi778"
           target="_blank"
           rel="noopener noreferrer">GitHub</a
-        > 上找到我。 如果你有任何想法，或只是想聊聊，随时欢迎给我发送 <a
+        > 找到我，或通过 <a
           href="mailto:nianyi778@gmail.com">邮件</a
-        >。
+        > 交流。
       </p>
     </div>
   </div>

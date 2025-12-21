@@ -11,7 +11,8 @@ interface Props {
 }
 const { currentNav } = Astro.props;
 
-const customLogo = (await fs.stat('./src/assets/logo.svg')).isFile();
+// const customLogo = (await fs.stat('./src/assets/logo.svg')).isFile();
+const customLogo = false;
 
 const socialConfig: Record<string, Record<string, string>> = {
 	bilibili: { icon: 'ri:bilibili-fill' },
@@ -81,12 +82,17 @@ for (const platform in Socials) {
 				transition:persist
 				href={withBase('/')}
 				aria-label="go to index"
-				class={customLogo ? '' : 'w-[4.5rem] text-4xl'}
+				class={customLogo ? '' : 'hover:text-theme-accent transition-colors'}
 			>
 				{customLogo ? (
 					<Icon name="logo" class="size-16 fill-current" title="go to index" />
 				) : (
-					SiteTitle
+					<div class="grid grid-cols-2 w-16 text-2xl font-bold font-serif leading-none gap-0.5">
+						<span>{SiteTitle[0]}</span>
+						<span>{SiteTitle[1]}</span>
+						<span>{SiteTitle[2]}</span>
+						<span>{SiteTitle[3]}</span>
+					</div>
 				)}
 			</a>
 		) : (
