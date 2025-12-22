@@ -9,248 +9,207 @@ tags:
   - Tutorial
 ---
 
-> 适用对象：
-> - **ap-osaka-1（大阪）Region**
-> - **ARM / VM.Standard.A1.Flex**
-> - 免费层或新租户
-> - Console 一直提示 **Out of host capacity**
+> **适用对象**
+> - Region：ap-osaka-1（大阪）
+> - Shape：VM.Standard.A1.Flex（ARM / aarch64）
+> - 免费层 / 新租户
+> - Console 长期提示 **Out of host capacity**
 
-本教程基于一次**真实完整排障与实战刷机过程**整理，目标是：
+这篇文章基于一次**完整真实排障 + 最终进入“稳定刷库存阶段”**的过程整理，融合了：
 
-> ✅ **最终刷到一台 Osaka 的 A1 ARM 实例**
+- 参数校验
+- ARM 镜像选择
+- 错误分类
+- 指数退避 + 抖动
+- CLI / 云机环境迁移
 
----
+目标只有一个：
 
-## 一、背景与核心结论
-
-### 1️⃣ 为什么大阪创建实例总失败？
-
-- Osaka 是 OCI **全球最拥挤的 Region 之一**
-- ARM（A1）性价比极高，被大量脚本/用户长期占用
-- Console 创建 **几乎不可能一次成功**
-
-👉 **结论**：
-
-> **大阪 ARM = 只能靠 CLI + 脚本刷，没有捷径**
+> ✅ **把问题从“为什么失败”推进到“只剩库存因素”**
 
 ---
 
-## 二、整体思路（先理解，再操作）
+## 一、核心结论（先看这个）
 
-### 刷大阪的本质
-
-- 不是“配置问题”
-- 而是：
-
-> **在唯一的 AD 里，反复抢别人释放出来的物理宿主机**
-
-### 成功条件
-
-- CLI 认证必须 100% 正确
-- 参数必须全部来自 **Osaka**
-- 刷的节奏要安全（避免风控）
+1. **Osaka A1 失败 ≠ 配置问题**
+   - 绝大多数情况是：**宿主机没库存**
+2. **Console 基本无解**
+   - 实操层面只能靠 **OCI CLI + 脚本轮询**
+3. **只要看到 `Out of host capacity`**
+   - 往往说明你已经 **配置正确**
+   - 剩下的就是等 Oracle 放出碎片资源
 
 ---
 
-## 三、准备环境
+## 二、整体刷机思路（理解很重要）
 
-### 1️⃣ 安装 Python 3（推荐 brew）
+### Osaka 的真实情况
+
+- 只有 **1 个 AD**
+- A1 是真实物理 ARM 宿主机切片
+- Free Tier / 普通用户本质是在抢“别人释放的空位”
+
+### 成功的必要条件
+
+- CLI 认证 100% 正确
+- 所有 OCID **必须属于 ap-osaka-1**
+- 镜像必须是 **ARM / aarch64**
+- 节奏要慢（避免 API 限流 / 风控）
+
+---
+
+## 三、环境准备（云机 or 本地都可）
+
+下面以 Ubuntu 为例（在云机上跑更稳定，也更方便长期后台挂脚本）。
+
+### 1️⃣ 安装 OCI CLI
 
 ```bash
-brew install python
-python3 --version
-```
-
-要求：Python ≥ 3.8
-
----
-
-### 2️⃣ 安装 OCI CLI（推荐 pip 方式）
-
-```bash
-python3 -m pip install --upgrade pip
-python3 -m pip install oci-cli
-```
-
-验证：
-
-```bash
+sudo apt update
+sudo apt install -y python3 python3-pip curl unzip
+bash -c "$(curl -L https://raw.githubusercontent.com/oracle/oci-cli/master/scripts/install/install.sh)"
+source ~/.bashrc
 oci -v
 ```
 
 ---
 
-## 四、配置 OCI CLI 认证（最容易踩坑的部分）
+## 四、OCI CLI 认证（关键步骤）
 
-执行：
+确保你已经完成：
 
-```bash
-oci setup config
-```
-
-### 正确填写示例
-
-```text
-Enter a location for your config:
-→ 直接回车
-
-Enter a user OCID:
-→ ocid1.user.oc1..xxxxxx
-
-Enter a tenancy OCID:
-→ ocid1.tenancy.oc1..xxxxxx
-
-Enter a region:
-→ ap-osaka-1
-```
-
-⚠️ **常见错误（一定要避免）**
-
-- ❌ 把 subnet / domain 当成 user OCID
-- ❌ 把 subnet 当成 tenancy OCID
-
----
-
-### 生成 API Key
-
-```text
-Generate a new API Signing RSA key pair? Y
-```
-
-生成后会得到：
-
+- `~/.oci/config`
 - `~/.oci/oci_api_key.pem`
-- `~/.oci/oci_api_key_public.pem`
+- 公钥已上传到 OCI Console → User → API Keys
 
----
-
-### 上传公钥（必须做）
-
-```bash
-cat ~/.oci/oci_api_key_public.pem
-```
-
-复制全部内容，然后：
-
-```
-OCI Console → 右上角头像 → 用户设置 → API 密钥 → 添加 → 粘贴
-```
-
----
-
-### 验证是否成功
+验证：
 
 ```bash
 oci iam availability-domain list
 ```
 
-成功示例：
+Osaka 正常通常只会看到：
 
-```json
-{
-  "data": [
-    {
-      "name": "cQAx:AP-OSAKA-1-AD-1"
-    }
-  ]
-}
+```text
+cQAx:AP-OSAKA-1-AD-1
 ```
-
-> **说明**：
-> - 大部分 Osaka 租户 **只会看到 1 个 AD**（这是正常的）
 
 ---
 
-## 五、获取刷实例所需的 3 个关键参数
+## 五、必须准备的 3 个 OCID（100% 来自 Osaka）
 
-### 1️⃣ COMPARTMENT_ID（你新建的子区间）
+### 1️⃣ COMPARTMENT_ID
 
-路径：
-
-```
-OCI Console → 身份 → 区间 → 创建子区间
+```bash
+oci iam compartment list --compartment-id-in-subtree true --all
 ```
 
-进入子区间后，复制：
+一般使用：
 
-```text
-ocid1.compartment.oc1..xxxx
-```
+- `name = root` 对应的 id
+- 或你自建的 compartment
 
 ---
 
 ### 2️⃣ SUBNET_ID（Osaka 子网）
 
-路径：
-
-```
-OCI Console → 网络 → 虚拟云网络 → Default VCN → 子网
-```
-
-推荐选择：
-
-- `Default Subnet (Regional)`
-
-复制：
-
-```text
-ocid1.subnet.oc1.ap-osaka-1.xxxx
-```
-
----
-
-### 3️⃣ IMAGE_ID（ARM 镜像，最容易拿错）
-
-路径：
-
-```
-OCI Console → 计算 → 映像
-```
-
 要求：
 
-- Region：Japan Central (Osaka)
-- Publisher：Canonical
-- Architecture：ARM / aarch64
-- OS：Ubuntu 20.04 / 22.04
+- Region：ap-osaka-1
+- 推荐：Default Subnet (Regional)
 
-复制：
+校验：
 
-```text
-ocid1.image.oc1.ap-osaka-1.xxxx
+```bash
+oci network subnet get --subnet-id <SUBNET_ID>
 ```
 
 ---
 
-## 六、最终刷大阪 A1 的脚本
+### 3️⃣ IMAGE_ID（必须是 ARM / aarch64）
 
-### 📄 oci-osaka-a1-single-ad.sh
+最常见踩坑：**拿了 x86 镜像去建 A1（ARM）**。
+
+用 CLI 直接筛选 A1 可用的 ARM 镜像（示例为 Oracle Linux 9）：
+
+```bash
+oci compute image list \
+  --compartment-id <COMPARTMENT_ID> \
+  --shape VM.Standard.A1.Flex \
+  --operating-system "Oracle Linux" \
+  --operating-system-version "9" \
+  --all \
+  --output table
+```
+
+推荐优先选最新的 `aarch64`：
+
+```text
+Oracle-Linux-9.x-aarch64-YYYY.MM.DD-0
+```
+
+---
+
+## 六、最终刷机脚本（优化版 · 推荐）
+
+### 📄 `oci-osaka-a1-single-ad.sh`
 
 ```bash
 #!/usr/bin/env bash
+set -euo pipefail
 
-set -e
+# ===== 必填（替换成你自己的）=====
+COMPARTMENT_ID="ocid1.compartment.oc1..xxxxxxxx"
+SUBNET_ID="ocid1.subnet.oc1.ap-osaka-1.xxxxxxxx"
+IMAGE_ID="ocid1.image.oc1.ap-osaka-1.xxxxxxxx"   # ARM / aarch64
 
-COMPARTMENT_ID="ocid1.compartment.oc1..xxxx"
-SUBNET_ID="ocid1.subnet.oc1.ap-osaka-1.xxxx"
-IMAGE_ID="ocid1.image.oc1.ap-osaka-1.xxxx"
-
+# ===== Osaka 通常只有一个 AD =====
 AD_NAME="cQAx:AP-OSAKA-1-AD-1"
 
+# ===== A1 配置（成功率常见更高）=====
 SHAPE="VM.Standard.A1.Flex"
 OCPUS=1
 MEMORY=6
-DISPLAY_NAME="osaka-a1-$(date +%Y%m%d-%H%M%S)"
 
-SLEEP_INTERVAL=60
+# ===== 退避策略 =====
+BASE_SLEEP=60
+MAX_SLEEP=$((20*60))
+JITTER_MAX=30
+DEBUG="${DEBUG:-0}"
 
-echo "🔥 Start hunting Osaka A1 capacity..."
+log() { echo "[$(date '+%F %T')] $*"; }
+
+classify_error() {
+  local out="$1"
+  if echo "$out" | grep -qi "Out of host capacity"; then
+    echo "NO_CAPACITY（区域/AD 没库存）"; return
+  fi
+  if echo "$out" | grep -qiE "Quota|LimitExceeded"; then
+    echo "QUOTA_OR_LIMIT（配额/免费额度）"; return
+  fi
+  if echo "$out" | grep -qi "InvalidParameter"; then
+    echo "INVALID_PARAM（参数错误）"; return
+  fi
+  echo "OTHER"
+}
+
+sleep_with_backoff() {
+  local base="$1"
+  local jitter=$((RANDOM % (JITTER_MAX + 1)))
+  local total=$((base + jitter))
+  log "sleep ${total}s"
+  sleep "$total"
+}
+
+log "Start hunting Osaka A1..."
+sleep_sec="$BASE_SLEEP"
 
 while true; do
-  echo "⏳ Try launch at $(date)"
+  DISPLAY_NAME="osaka-a1-$(date +%Y%m%d-%H%M%S)"
+  log "Try $AD_NAME name=$DISPLAY_NAME ocpu=$OCPUS mem=${MEMORY}G"
 
   set +e
-  oci compute instance launch \
+  OUT="$(oci compute instance launch \
     --availability-domain "$AD_NAME" \
     --compartment-id "$COMPARTMENT_ID" \
     --shape "$SHAPE" \
@@ -259,108 +218,60 @@ while true; do
     --image-id "$IMAGE_ID" \
     --assign-public-ip true \
     --shape-config "{\"ocpus\":$OCPUS,\"memoryInGBs\":$MEMORY}" \
-    > /dev/null 2>&1
-
+    2>&1)"
   RESULT=$?
   set -e
 
-  if [ $RESULT -eq 0 ]; then
-    echo "🎉 SUCCESS! Instance created!"
+  if [ "$RESULT" -eq 0 ]; then
+    log "SUCCESS!"
     exit 0
-  else
-    echo "❌ No capacity, sleep ${SLEEP_INTERVAL}s..."
-    sleep $SLEEP_INTERVAL
   fi
+
+  REASON="$(classify_error "$OUT")"
+  log "FAILED: $REASON"
+  [ "$DEBUG" -eq 1 ] && echo "$OUT"
+
+  sleep_with_backoff "$sleep_sec"
+  sleep_sec=$((sleep_sec * 2))
+  [ "$sleep_sec" -gt "$MAX_SLEEP" ] && sleep_sec="$MAX_SLEEP"
 done
 ```
 
 ---
 
-## 七、进阶：成功后自动通知
-
-如果你不想一直盯着日志，可以在脚本成功部分加入通知代码。
-
-### 1️⃣ Telegram 通知（推荐）
-
-你需要：
-1.  在 Telegram 找 `@BotFather` 创建机器人，获取 `BOT_TOKEN`。
-2.  找 `@userinfobot` 获取你的 `CHAT_ID`。
-
-修改脚本中的成功判断部分：
-
-```bash
-  if [ $RESULT -eq 0 ]; then
-    echo "🎉 SUCCESS! Instance created!"
-    
-    # Telegram 通知
-    curl -s -X POST "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/sendMessage" \
-        -d chat_id="<YOUR_CHAT_ID>" \
-        -d text="✅ OCI Osaka A1 实例创建成功！IP 请登录控制台查看。"
-
-    exit 0
-  else
-```
-
-### 2️⃣ 邮件通知（需要配置 mail 命令）
-
-```bash
-  if [ $RESULT -eq 0 ]; then
-    echo "🎉 SUCCESS! Instance created!" | mail -s "OCI Instance Created" your-email@example.com
-    exit 0
-  fi
-```
-
----
-
-## 八、运行方式
+## 七、运行与后台常驻
 
 ```bash
 chmod +x oci-osaka-a1-single-ad.sh
-nohup ./oci-osaka-a1-single-ad.sh > osaka-hunt.log 2>&1 &
+DEBUG=1 nohup ./oci-osaka-a1-single-ad.sh > oci-hunt.log 2>&1 &
+tail -f oci-hunt.log
 ```
 
-查看日志：
-
-```bash
-tail -f osaka-hunt.log
-```
-
-正常状态：
+看到以下日志说明一切正常（你已经进入“只剩库存因素”的阶段）：
 
 ```text
-❌ No capacity, sleep 60 sec...
-```
-
-成功状态：
-
-```text
-🎉 SUCCESS! Instance created!
+FAILED: NO_CAPACITY（区域/AD 没库存）
 ```
 
 ---
 
-## 九、现实预期（非常重要）
+## 八、现实预期（非常重要）
 
-- ⏱ 常见成功时间：10 分钟 ~ 几小时
-- 🕐 最容易成功：日本时间 **凌晨 1–6 点**
-- ❗ 日志一直 No capacity 是 **正常现象**
-
----
-
-## 十、成功后第一时间要做的事
-
-1. Console → Compute → Instances
-2. 记录公网 IP
-3. SSH 登录确认
-4. **不要立刻删除/停止实例**（避免容量回收）
+- 成功时间：**10 分钟 ~ 数小时（甚至更久）**
+- 常见放量时间：UTC 夜间 / 日本下午-晚上
+- 长时间 `NO_CAPACITY` 完全正常
 
 ---
 
-## 十一、一句话总结
+## 九、成功后注意事项
 
-> **大阪 ARM 不是“创建”，而是“抢”**  
-> 你跑着脚本，就已经在队列里了。
+- 不要立刻 Stop / Terminate
+- 先 SSH 登录一次
+- 跑点真实负载，避免被回收
 
 ---
 
-祝你成功刷到 Osaka A1 🎯
+## 十、一句话总结
+
+> **大阪 A1 不是“创建”，而是“等待 + 抢占”**
+> 你看到 `Out of host capacity`，就说明方向基本对了。
