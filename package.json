@@ -9,11 +9,11 @@
 	"homepage": "https://nianyi778.github.io",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/nianyi778/blog.git"
+		"url": "git+https://github.com/nianyi778/nianyi778.github.io.git"
 	},
 	"license": "MIT",
 	"bugs": {
-		"url": "https://github.com/nianyi778/blog/issues"
+		"url": "https://github.com/nianyi778/nianyi778.github.io/issues"
 	},
 	"type": "module",
 	"engines": {
