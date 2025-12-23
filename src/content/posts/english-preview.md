@@ -2,6 +2,7 @@
 title: English Preview
 description: A sample page with the most common elements of an article, including headings, paragraphs, lists, and images. Use it as a starting point for applying your own styles.
 date: 2019-04-01T14:26:00+08:00
+hidden: true
 tags:
   - sample post
   - English

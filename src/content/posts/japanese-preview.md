@@ -1,6 +1,7 @@
 ---
 title: 日本語敬語体系
 date: 2019-04-10T14:26:00+08:00
+hidden: true
 tags:
   - sample post
   - 日本語
