@@ -66,7 +66,9 @@ export default defineConfig({
 					minify: true,
 				},
 			},
-			HTML: true,
+			HTML: {
+				removeComments: false,
+			},
 			Image: true,
 			JavaScript: true,
 			SVG: true,
