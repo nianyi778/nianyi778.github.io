@@ -1,6 +1,6 @@
 import type { PostHideElements } from '~/content/config';
 
-export const Site = 'https://blog.divinations.top';
+export const Site = 'https://nianyi778.github.io';
 export const SiteLanguage = 'zh-CN';
 export const SiteTitle = '一念三千';
 export const SiteDescription = '心之所向，素履以往';
